@@ -1,0 +1,195 @@
+/* =====================================================================
+   1st Choice IELTS & Immigration — global styles
+   Tailwind CSS is loaded via CDN (see renderer.tsx) with an inline
+   config for brand colors/fonts. This file covers things the CDN
+   build can't: custom fonts import, fine animations, and a handful
+   of components too fiddly to express cleanly in utility classes.
+   ===================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --brand-blue: #0b2559;
+  --brand-blue-dark: #061534;
+  --brand-blue-light: #13407d;
+  --brand-red: #f70009;
+  --brand-red-dark: #c40007;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #1a1a2e;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+/* Skip-to-content link for keyboard/screen-reader users (WCAG) */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--brand-blue);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  z-index: 100;
+  border-radius: 0 0 0.5rem 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+/* Floating WhatsApp button */
+.whatsapp-float {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  width: 60px;
+  height: 60px;
+  border-radius: 9999px;
+  background: #25d366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 25px rgba(37, 211, 102, 0.5);
+  animation: wa-pulse 2.4s infinite;
+  transition: transform 0.2s ease;
+}
+.whatsapp-float:hover {
+  transform: scale(1.08);
+}
+@keyframes wa-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55); }
+  70% { box-shadow: 0 0 0 16px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: radial-gradient(1200px circle at 10% 10%, #13407d 0%, #0b2559 45%, #061534 100%);
+}
+
+/* Card hover lift */
+.card-lift {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-lift:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -12px rgba(11, 37, 89, 0.25);
+}
+
+/* Fade-in-up scroll animation (applied via JS IntersectionObserver) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animated counter number container avoids layout shift */
+.stat-number {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Simple marquee for the top announcement bar */
+.announce-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 18s linear infinite;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Lightbox overlay for Visa Results gallery */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 21, 52, 0.92);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* Rich text content rendered from the news editor */
+.prose-content h2 { font-size: 1.5rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--brand-blue); }
+.prose-content h3 { font-size: 1.25rem; font-weight: 700; margin-top: 1.25rem; margin-bottom: 0.5rem; color: var(--brand-blue); }
+.prose-content p { margin-bottom: 1rem; line-height: 1.75; }
+.prose-content ul, .prose-content ol { margin: 0 0 1rem 1.5rem; }
+.prose-content ul { list-style: disc; }
+.prose-content ol { list-style: decimal; }
+.prose-content a { color: var(--brand-red); text-decoration: underline; }
+.prose-content img { border-radius: 0.75rem; margin: 1rem 0; max-width: 100%; }
+.prose-content blockquote { border-left: 4px solid var(--brand-red); padding-left: 1rem; font-style: italic; color: #475569; margin: 1rem 0; }
+.prose-content strong { font-weight: 700; }
+
+/* Admin rich text editor toolbar */
+.rte-toolbar button {
+  transition: background 0.15s ease;
+}
+.rte-toolbar button:hover {
+  background: #e2e8f0;
+}
+.rte-content[contenteditable="true"] {
+  min-height: 320px;
+}
+.rte-content[contenteditable="true"]:focus {
+  outline: none;
+}
+
+/* Mobile nav drawer transition */
+#mobile-nav {
+  transition: transform 0.3s ease;
+  transform: translateX(100%);
+}
+#mobile-nav.open {
+  transform: translateX(0);
+}
+
+/* Donut chart legend swatch */
+.legend-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Accessible focus ring everywhere */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 3px solid var(--brand-red);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--brand-red);
+  color: #fff;
+}
+
+/* Scrollbar for tables on mobile */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

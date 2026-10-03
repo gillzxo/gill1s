@@ -1,14 +1,18 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "1st-choice-ielts-immigration",
+  "name": "gill1s",
+  "main": "dist/_worker.js",
   "compatibility_date": "2026-09-17",
-  "pages_build_output_dir": "./dist",
   "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "1st-choice-production",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+      "database_id": "4b3dc6fa-102a-406c-8665-9207c17e112e"
     }
   ],
   "r2_buckets": [

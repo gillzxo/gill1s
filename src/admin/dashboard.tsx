@@ -112,7 +112,6 @@ function escapeHtml(str: string): string {
 // Each uses the same AdminLayout shell so navigation never 404s.
 // ---------------------------------------------------------------------
 const PLACEHOLDER_SECTIONS: { path: string; nav: string; title: string; ownerOnly?: boolean }[] = [
-  { path: '/enquiries', nav: 'enquiries', title: 'Enquiries Manager' },
   { path: '/visa-results', nav: 'visa-results', title: 'Visa Results Manager' },
   { path: '/coaching-results', nav: 'coaching-results', title: 'Coaching Results Manager' },
   { path: '/news', nav: 'news', title: 'News / Immigration Updates' },

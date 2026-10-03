@@ -23,6 +23,8 @@ import seo from './routes/seo'
 
 import adminAuth from './admin/auth'
 import adminDashboard from './admin/dashboard'
+import adminEnquiries from './admin/enquiries'
+import adminUpload from './admin/upload'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -38,6 +40,8 @@ app.route('/api', api)
 
 // Admin portal (own HTML shell, not the public renderer)
 app.route('/admin', adminAuth)
+app.route('/admin/enquiries', adminEnquiries)
+app.route('/admin/api', adminUpload)
 app.route('/admin', adminDashboard)
 
 // Public pages (use the shared renderer)

@@ -13,6 +13,13 @@ export type Bindings = {
   WHATSAPP_PHONE_NUMBER_ID?: string
   WHATSAPP_ACCESS_TOKEN?: string
   WHATSAPP_OWNER_NUMBER?: string
+  // Optional pre-approved WhatsApp template name used to message the
+  // STUDENT (business-initiated — Meta requires an approved template
+  // outside the 24h customer-service window). If not set, a freeform
+  // text confirmation is attempted instead, which only succeeds if the
+  // student messaged the business number within the last 24h.
+  WHATSAPP_CONFIRMATION_TEMPLATE_NAME?: string
+  WHATSAPP_CONFIRMATION_TEMPLATE_LANG?: string
   RESEND_API_KEY?: string
   NOTIFY_EMAIL_TO?: string
   NOTIFY_EMAIL_FROM?: string
@@ -123,6 +130,52 @@ export interface Review {
   review_date: string | null
   is_visible: number
   sort_order: number
+  created_at: string
+}
+
+export interface Student {
+  id: number
+  enquiry_id: number | null
+  access_token: string
+  name: string
+  phone: string
+  email: string | null
+  country: string | null
+  course: string | null
+  university: string | null
+  status:
+    | 'Registered'
+    | 'Documents Pending'
+    | 'Application Submitted'
+    | 'Visa Filed'
+    | 'Visa Approved'
+    | 'Visa Rejected'
+    | 'Enrolled'
+    | 'On Hold'
+  required_documents: string | null
+  assigned_to: number | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface StudentDocument {
+  id: number
+  student_id: number
+  doc_name: string
+  file_url: string
+  uploaded_by: 'student' | 'admin'
+  uploaded_by_name: string | null
+  created_at: string
+}
+
+export interface StudentUpdate {
+  id: number
+  student_id: number
+  title: string
+  message: string | null
+  is_visible_to_student: number
+  created_by_name: string | null
   created_at: string
 }
 

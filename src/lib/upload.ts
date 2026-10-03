@@ -54,3 +54,62 @@ export async function handleImageUpload(
 
   return { ok: true, key, url: `/uploads/${key}` }
 }
+
+// ---------------------------------------------------------------------
+// Generic document upload — used by the Student Portal (both the
+// student-facing upload widget and the admin "upload on behalf of
+// student" action). Accepts images AND PDFs since visa documents
+// (passport, bank statements, offer letters) are usually PDF scans.
+// ---------------------------------------------------------------------
+const ALLOWED_DOC_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/pdf'
+])
+const MAX_DOC_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
+
+function extFromDocType(type: string): string {
+  switch (type) {
+    case 'image/jpeg':
+      return 'jpg'
+    case 'image/png':
+      return 'png'
+    case 'image/webp':
+      return 'webp'
+    case 'image/gif':
+      return 'gif'
+    case 'application/pdf':
+      return 'pdf'
+    default:
+      return 'bin'
+  }
+}
+
+export async function handleDocumentUpload(
+  bucket: R2Bucket,
+  file: File,
+  folder: string
+): Promise<UploadResult> {
+  if (!file || typeof file === 'string') {
+    return { ok: false, error: 'No file provided' }
+  }
+  if (!ALLOWED_DOC_TYPES.has(file.type)) {
+    return { ok: false, error: 'Only JPG, PNG, WEBP, GIF, or PDF files are allowed' }
+  }
+  if (file.size > MAX_DOC_SIZE_BYTES) {
+    return { ok: false, error: 'File must be smaller than 10MB' }
+  }
+
+  const ext = extFromDocType(file.type)
+  const randomId = crypto.randomUUID()
+  const key = `${folder}/${Date.now()}-${randomId}.${ext}`
+
+  const buffer = await file.arrayBuffer()
+  await bucket.put(key, buffer, {
+    httpMetadata: { contentType: file.type }
+  })
+
+  return { ok: true, key, url: `/uploads/${key}` }
+}

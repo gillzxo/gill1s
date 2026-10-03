@@ -158,6 +158,99 @@ h1, h2, h3, h4, h5, h6, .font-display {
   transform: translateX(0);
 }
 
+/* ---------------------------------------------------------------------
+   Desktop dropdown nav (Coaching / Study Abroad submenus)
+   --------------------------------------------------------------------- */
+.nav-dropdown-panel {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+.nav-item:hover .nav-dropdown-panel,
+.nav-item:focus-within .nav-dropdown-panel,
+.nav-item.nav-open .nav-dropdown-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.nav-chevron {
+  transition: transform 0.18s ease;
+}
+.nav-item:hover .nav-chevron,
+.nav-item:focus-within .nav-chevron,
+.nav-item.nav-open .nav-chevron {
+  transform: rotate(180deg);
+}
+
+/* Mobile nav accordion submenu */
+.mobile-submenu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+}
+.mobile-submenu.open {
+  max-height: 400px;
+}
+
+/* Popup modal entrance animation (defined here instead of a Tailwind
+   arbitrary class so it works reliably with the Tailwind CDN build) */
+@keyframes popupIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.popup-anim {
+  animation: popupIn 0.3s ease;
+}
+
+/* Hero entrance animation (plays once on page load, independent of scroll) */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.hero-anim {
+  animation: heroFadeUp 0.7s ease both;
+}
+.hero-anim-delay-1 { animation-delay: 0.1s; }
+.hero-anim-delay-2 { animation-delay: 0.22s; }
+.hero-anim-delay-3 { animation-delay: 0.34s; }
+
+/* Staggered reveal — add class "stagger" to a grid/flex container whose
+   direct children use the existing .reveal scroll-animation class, and
+   each child will animate in with a slight incremental delay. */
+.stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
+.stagger > .reveal:nth-child(2) { transition-delay: 70ms; }
+.stagger > .reveal:nth-child(3) { transition-delay: 140ms; }
+.stagger > .reveal:nth-child(4) { transition-delay: 210ms; }
+.stagger > .reveal:nth-child(5) { transition-delay: 280ms; }
+.stagger > .reveal:nth-child(6) { transition-delay: 350ms; }
+.stagger > .reveal:nth-child(7) { transition-delay: 420ms; }
+.stagger > .reveal:nth-child(8) { transition-delay: 490ms; }
+
+/* Gentle pulse ring to draw the eye to the primary Register CTA */
+@keyframes ctaPulseRing {
+  0% { box-shadow: 0 0 0 0 rgba(247, 0, 9, 0.45); }
+  70% { box-shadow: 0 0 0 10px rgba(247, 0, 9, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(247, 0, 9, 0); }
+}
+.cta-pulse {
+  animation: ctaPulseRing 2.6s infinite;
+}
+
+/* Document upload dropzone used on the student portal page */
+.portal-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.portal-dropzone.dragover {
+  border-color: #f70009;
+  background: #fef2f2;
+}
+
 /* Donut chart legend swatch */
 .legend-swatch {
   width: 12px;

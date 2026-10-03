@@ -40,9 +40,9 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   md_bio:
     'Gurpiar Singh Gill founded 1st Choice IELTS & Immigration in Bagha Purana in 2018 with one simple goal — give students in Moga and the surrounding villages honest, affordable access to world-class IELTS/PTE coaching and transparent immigration advice. Since then he has personally guided thousands of students through their IELTS/PTE preparation and visa journeys to Canada, UK, Australia, USA and Europe.',
   popup_enabled: '1',
-  popup_title: 'Free IELTS/PTE Demo Class!',
-  popup_text: 'Get a FREE demo class and an honest assessment of your study abroad / visa chances — no strings attached. Limited seats every week.',
-  popup_cta_text: 'Claim My Free Spot',
+  popup_title: 'Thinking of Studying Abroad?',
+  popup_text: 'Get a FREE, honest assessment of your study-abroad chances — best-fit country, course & visa pathway — from our counsellors in Bagha Purana. No strings attached.',
+  popup_cta_text: 'Get My Free Assessment',
   popup_cta_link: '/register'
 }
 

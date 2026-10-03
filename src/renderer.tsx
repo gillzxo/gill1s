@@ -6,6 +6,7 @@
 import { jsxRenderer } from 'hono/jsx-renderer'
 import type { SiteSettings } from './lib/types'
 import { DEFAULT_SETTINGS, whatsappLink } from './lib/settings'
+import { EnquiryForm } from './components/EnquiryForm'
 
 export interface RenderMeta {
   title?: string
@@ -25,17 +26,47 @@ declare module 'hono' {
   }
 }
 
+// Flat list kept for the footer "Quick Links" column and for simple
+// active-path checks. The header itself groups related pages under
+// "Coaching" and "Study Abroad" dropdowns — see <header> below.
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/coaching', label: 'Coaching' },
+  { href: '/score-charts', label: 'IELTS/PTE Score Charts' },
   { href: '/study-abroad', label: 'Study Abroad' },
   { href: '/visitor-visa', label: 'Visitor Visa' },
-  { href: '/score-charts', label: 'Score Charts' },
-  { href: '/education-loan', label: 'Education Loan' },
   { href: '/visa-results', label: 'Visa Results' },
+  { href: '/education-loan', label: 'Education Loan' },
   { href: '/reviews', label: 'Reviews' },
   { href: '/news', label: 'News' },
-  { href: '/contact', label: 'Contact' }
+  { href: '/contact', label: 'Contact' },
+  { href: '/register', label: 'Register' }
+]
+
+// Primary header nav: a short, uncluttered top-level list with two
+// grouped dropdowns (Coaching, Study Abroad) so related pages (Score
+// Charts, Visitor Visa, Visa Results) don't each need their own slot.
+const NAV_GROUPS: { label: string; href: string; children?: { href: string; label: string; desc: string; icon: string }[] }[] = [
+  { label: 'Home', href: '/' },
+  {
+    label: 'Coaching',
+    href: '/coaching',
+    children: [
+      { href: '/coaching', label: 'IELTS / PTE Coaching', desc: 'Courses, fees & faculty', icon: 'fa-chalkboard-user' },
+      { href: '/score-charts', label: 'Score Charts & Converter', desc: 'IELTS, PTE, PTE Core, CLB', icon: 'fa-chart-simple' }
+    ]
+  },
+  {
+    label: 'Study Abroad',
+    href: '/study-abroad',
+    children: [
+      { href: '/study-abroad', label: 'Explore Destinations', desc: 'Canada, UK, Australia, USA, NZ, Europe', icon: 'fa-earth-asia' },
+      { href: '/visitor-visa', label: 'Visitor Visa Guide', desc: 'Document checklist & SOP tips', icon: 'fa-passport' },
+      { href: '/visa-results', label: 'Visa Results Gallery', desc: 'Real student approvals', icon: 'fa-image' }
+    ]
+  },
+  { label: 'Education Loan', href: '/education-loan' },
+  { label: 'Contact', href: '/contact' }
 ]
 
 export const renderer = jsxRenderer((props, c) => {
@@ -167,31 +198,60 @@ export const renderer = jsxRenderer((props, c) => {
                 <img src="/static/images/logo.png" alt={`${settings.business_name} logo`} class="h-14 w-auto" width="140" height="56" />
               </a>
 
-              <nav class="hidden xl:flex items-center gap-5" aria-label="Primary navigation">
-                {NAV_LINKS.map((link) => (
-                  <a
-                    href={link.href}
-                    class={`text-[13px] font-semibold whitespace-nowrap transition-colors hover:text-brand-red ${
-                      path === link.href ? 'text-brand-red' : 'text-brand-blue'
-                    }`}
-                  >
-                    {link.label}
-                  </a>
-                ))}
+              <nav class="hidden xl:flex items-center gap-1" aria-label="Primary navigation">
+                {NAV_GROUPS.map((group) =>
+                  group.children ? (
+                    <div class="nav-item relative px-3 py-2">
+                      <a
+                        href={group.href}
+                        class={`flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap transition-colors hover:text-brand-red ${
+                          path === group.href || group.children.some((ch) => ch.href === path) ? 'text-brand-red' : 'text-brand-blue'
+                        }`}
+                      >
+                        {group.label} <i class="fa-solid fa-chevron-down nav-chevron text-[10px] mt-0.5"></i>
+                      </a>
+                      <div class="nav-dropdown-panel absolute left-0 top-full pt-2 w-72 z-50">
+                        <div class="bg-white rounded-xl shadow-2xl border border-slate-100 p-2">
+                          {group.children.map((child) => (
+                            <a href={child.href} class={`flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-50 ${path === child.href ? 'bg-red-50' : ''}`}>
+                              <span class="w-9 h-9 rounded-lg bg-red-50 text-brand-red flex items-center justify-center shrink-0">
+                                <i class={`fa-solid ${child.icon} text-sm`}></i>
+                              </span>
+                              <span>
+                                <span class="block text-sm font-bold text-brand-blue">{child.label}</span>
+                                <span class="block text-xs text-slate-400">{child.desc}</span>
+                              </span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <a
+                      href={group.href}
+                      class={`px-3 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors hover:text-brand-red ${
+                        path === group.href ? 'text-brand-red' : 'text-brand-blue'
+                      }`}
+                    >
+                      {group.label}
+                    </a>
+                  )
+                )}
               </nav>
 
               <div class="hidden xl:flex items-center gap-3">
                 <a
                   href={`tel:${settings.phone_primary.replace(/\s/g, '')}`}
                   class="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue hover:text-brand-red"
+                  aria-label={`Call ${settings.phone_primary}`}
                 >
-                  <i class="fa-solid fa-phone"></i> {settings.phone_primary}
+                  <i class="fa-solid fa-phone"></i>
                 </a>
                 <a
-                  href="/contact"
-                  class="inline-flex items-center gap-2 bg-brand-red hover:bg-brand-reddark text-white text-sm font-bold px-5 py-2.5 rounded-full shadow transition-colors"
+                  href="/register"
+                  class="cta-pulse inline-flex items-center gap-2 bg-brand-red hover:bg-brand-reddark text-white text-sm font-bold px-5 py-2.5 rounded-full shadow transition-colors"
                 >
-                  Free Consultation
+                  <i class="fa-solid fa-user-plus"></i> Register Free
                 </a>
               </div>
 
@@ -217,16 +277,39 @@ export const renderer = jsxRenderer((props, c) => {
             </button>
           </div>
           <nav class="flex flex-col p-5 gap-1 overflow-y-auto" aria-label="Mobile navigation">
-            {NAV_LINKS.map((link) => (
-              <a
-                href={link.href}
-                class={`px-3 py-3 rounded-lg text-base font-semibold ${
-                  path === link.href ? 'bg-red-50 text-brand-red' : 'text-brand-blue hover:bg-slate-50'
-                }`}
-              >
-                {link.label}
-              </a>
-            ))}
+            {NAV_GROUPS.map((group, gi) =>
+              group.children ? (
+                <div>
+                  <button
+                    type="button"
+                    data-mobile-submenu-toggle={`mg-${gi}`}
+                    class={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-base font-semibold ${
+                      path === group.href || group.children.some((ch) => ch.href === path) ? 'bg-red-50 text-brand-red' : 'text-brand-blue hover:bg-slate-50'
+                    }`}
+                  >
+                    {group.label} <i class="fa-solid fa-chevron-down text-xs"></i>
+                  </button>
+                  <div id={`mg-${gi}`} class="mobile-submenu pl-4">
+                    {group.children.map((child) => (
+                      <a href={child.href} class={`block px-3 py-2.5 rounded-lg text-sm font-semibold ${path === child.href ? 'text-brand-red' : 'text-slate-600 hover:bg-slate-50'}`}>
+                        <i class={`fa-solid ${child.icon} w-5 text-brand-red/70`}></i> {child.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <a
+                  href={group.href}
+                  class={`px-3 py-3 rounded-lg text-base font-semibold ${
+                    path === group.href ? 'bg-red-50 text-brand-red' : 'text-brand-blue hover:bg-slate-50'
+                  }`}
+                >
+                  {group.label}
+                </a>
+              )
+            )}
+            <a href="/reviews" class={`px-3 py-3 rounded-lg text-base font-semibold ${path === '/reviews' ? 'bg-red-50 text-brand-red' : 'text-brand-blue hover:bg-slate-50'}`}>Reviews</a>
+            <a href="/news" class={`px-3 py-3 rounded-lg text-base font-semibold ${path === '/news' ? 'bg-red-50 text-brand-red' : 'text-brand-blue hover:bg-slate-50'}`}>News</a>
           </nav>
           <div class="mt-auto p-5 border-t border-slate-100 flex flex-col gap-3">
             <a
@@ -235,8 +318,8 @@ export const renderer = jsxRenderer((props, c) => {
             >
               <i class="fa-solid fa-phone"></i> Call Us
             </a>
-            <a href="/contact" class="inline-flex items-center justify-center gap-2 bg-brand-red text-white font-bold py-3 rounded-full">
-              Free Consultation
+            <a href="/register" class="inline-flex items-center justify-center gap-2 bg-brand-red text-white font-bold py-3 rounded-full">
+              <i class="fa-solid fa-user-plus"></i> Register Free
             </a>
           </div>
         </div>
@@ -373,15 +456,17 @@ export const renderer = jsxRenderer((props, c) => {
           <i class="fa-brands fa-whatsapp text-white text-3xl"></i>
         </a>
 
-        {/* Dismissible welcome popup (admin-configurable via Settings) */}
+        {/* Dismissible welcome popup (admin-configurable via Settings).
+            Shown only ONCE EVER per browser (localStorage-gated — see
+            app.js), closable via X / No Thanks / backdrop / Esc. */}
         {settings.popup_enabled === '1' && settings.popup_title ? (
           <div id="welcome-popup-backdrop" class="fixed inset-0 bg-black/60 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="welcome-popup-title">
-            <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-[fadeIn_0.25s_ease]">
+            <div class="popup-anim relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8">
               <button id="welcome-popup-close" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center" aria-label="Close popup">
                 <i class="fa-solid fa-xmark text-lg"></i>
               </button>
               <div class="w-14 h-14 rounded-xl bg-red-50 text-brand-red flex items-center justify-center mb-4">
-                <i class="fa-solid fa-gift text-2xl"></i>
+                <i class="fa-solid fa-earth-asia text-2xl"></i>
               </div>
               <h2 id="welcome-popup-title" class="font-display text-xl sm:text-2xl font-extrabold text-brand-blue mb-2">
                 {settings.popup_title}
@@ -401,6 +486,24 @@ export const renderer = jsxRenderer((props, c) => {
             </div>
           </div>
         ) : null}
+
+        {/* ================================================================
+            GLOBAL ENQUIRY MODAL — every "Enquire Now" / "Get Free
+            Consultation" button across the site (data-open-enquiry)
+            opens THIS one shared dialog instead of each page embedding
+            its own inline form. Keeps pages clean while still routing
+            every lead to /api/enquiry → D1 → admin inbox. The button's
+            data-service / data-country / data-message attributes pre-fill
+            the relevant fields.
+            ================================================================ */}
+        <dialog id="global-enquiry-modal" class="rounded-2xl p-0 w-[95vw] max-w-lg backdrop:bg-black/60 m-auto">
+          <div class="p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto">
+            <button data-close-modal type="button" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 z-10" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+            <EnquiryForm settings={settings} idPrefix="gmodal" heading="Get Your Free Consultation" subheading="Fill this quick form — our counsellor will call you shortly." compact />
+          </div>
+        </dialog>
 
         <script src="/static/js/app.js"></script>
       </body>

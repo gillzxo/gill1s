@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { key: 'visa-results', href: '/admin/visa-results', icon: 'fa-passport', label: 'Visa Results' },
   { key: 'coaching-results', href: '/admin/coaching-results', icon: 'fa-graduation-cap', label: 'Coaching Results' },
   { key: 'news', href: '/admin/news', icon: 'fa-newspaper', label: 'News / Updates' },
+  { key: 'students', href: '/admin/students', icon: 'fa-user-graduate', label: 'Students Portal' },
   { key: 'countries', href: '/admin/countries', icon: 'fa-earth-asia', label: 'Study Abroad' },
   { key: 'reviews', href: '/admin/reviews', icon: 'fa-star', label: 'Reviews' },
   { key: 'settings', href: '/admin/settings', icon: 'fa-gear', label: 'Site Settings' },

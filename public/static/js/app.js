@@ -31,24 +31,47 @@
   if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
   // ---------------------------------------------------------------
-  // Dismissible welcome popup — shows once per browser session
-  // (sessionStorage), closable via X, "No Thanks", backdrop click, or Esc.
+  // Mobile nav accordion — tap a group heading (Coaching / Study Abroad)
+  // to expand/collapse its submenu links.
+  // ---------------------------------------------------------------
+  document.querySelectorAll('[data-mobile-submenu-toggle]').forEach(function (btn) {
+    var targetId = btn.getAttribute('data-mobile-submenu-toggle');
+    var panel = document.getElementById(targetId);
+    if (!panel) return;
+    btn.addEventListener('click', function () {
+      var isOpen = panel.classList.contains('open');
+      // close any other open submenus for a tidy accordion effect
+      document.querySelectorAll('.mobile-submenu.open').forEach(function (p) {
+        if (p !== panel) p.classList.remove('open');
+      });
+      panel.classList.toggle('open', !isOpen);
+      var icon = btn.querySelector('i.fa-chevron-down');
+      if (icon) icon.style.transform = !isOpen ? 'rotate(180deg)' : '';
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // Dismissible welcome popup — shows ONLY ONCE EVER per browser
+  // (localStorage, not sessionStorage), closable via X, "No Thanks",
+  // backdrop click, or Esc. Content/enable toggle is admin-configurable
+  // via Site Settings (popup_enabled, popup_title, popup_text, etc).
   // ---------------------------------------------------------------
   var popupBackdrop = document.getElementById('welcome-popup-backdrop');
   if (popupBackdrop) {
-    var POPUP_KEY = 'welcomePopupDismissed';
+    var POPUP_KEY = 'fc_welcome_popup_seen_v1';
     var alreadyShown = false;
     try {
-      alreadyShown = sessionStorage.getItem(POPUP_KEY) === '1';
+      alreadyShown = localStorage.getItem(POPUP_KEY) === '1';
     } catch (e) {
-      /* sessionStorage unavailable (private mode) — just show it once per load */
+      /* localStorage unavailable (private mode) — fall back to not spamming every load */
+      alreadyShown = true;
     }
 
     function hidePopup() {
       popupBackdrop.classList.add('hidden');
       popupBackdrop.classList.remove('flex');
       try {
-        sessionStorage.setItem(POPUP_KEY, '1');
+        localStorage.setItem(POPUP_KEY, '1');
       } catch (e) {}
     }
 
@@ -56,13 +79,15 @@
       setTimeout(function () {
         popupBackdrop.classList.remove('hidden');
         popupBackdrop.classList.add('flex');
-      }, 1800);
+      }, 2200);
     }
 
     var popupClose = document.getElementById('welcome-popup-close');
     var popupDismiss = document.getElementById('welcome-popup-dismiss');
+    var popupCta = popupBackdrop.querySelector('a[href]');
     if (popupClose) popupClose.addEventListener('click', hidePopup);
     if (popupDismiss) popupDismiss.addEventListener('click', hidePopup);
+    if (popupCta) popupCta.addEventListener('click', hidePopup); // clicking through also counts as "seen"
     popupBackdrop.addEventListener('click', function (e) {
       if (e.target === popupBackdrop) hidePopup();
     });
@@ -209,17 +234,23 @@
   });
 
   // ---------------------------------------------------------------
-  // "Open enquiry modal pre-filled" buttons (used by loan calculators)
-  // Looks for [data-open-enquiry] buttons and a <dialog id="enquiry-modal">
+  // "Open enquiry modal pre-filled" buttons — used by every "Enquire
+  // Now" / "Free Consultation" button across the site instead of each
+  // page embedding its own full form. Prefers a page-local
+  // <dialog id="enquiry-modal"> (e.g. the loan calculators, which
+  // attach EMI results via extra_json); falls back to the shared
+  // <dialog id="global-enquiry-modal"> defined once in renderer.tsx.
   // ---------------------------------------------------------------
-  var modal = document.getElementById('enquiry-modal');
+  var modal = document.getElementById('enquiry-modal') || document.getElementById('global-enquiry-modal');
   document.querySelectorAll('[data-open-enquiry]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       if (!modal) return;
       var prefillService = modal.querySelector('[name="service"]');
+      var prefillCountry = modal.querySelector('[name="preferred_country"]');
       var prefillMessage = modal.querySelector('[name="message"]');
       var extraField = modal.querySelector('[name="extra_json"]');
-      if (prefillService) prefillService.value = btn.getAttribute('data-service') || 'Loan';
+      if (prefillService && btn.getAttribute('data-service')) prefillService.value = btn.getAttribute('data-service');
+      if (prefillCountry && btn.getAttribute('data-country')) prefillCountry.value = btn.getAttribute('data-country');
       if (prefillMessage) prefillMessage.value = btn.getAttribute('data-message') || '';
       if (extraField) extraField.value = btn.getAttribute('data-extra') || '';
       if (typeof modal.showModal === 'function') modal.showModal();
@@ -228,7 +259,7 @@
   });
   document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var dlg = btn.closest('dialog') || document.getElementById('enquiry-modal');
+      var dlg = btn.closest('dialog') || document.getElementById('enquiry-modal') || document.getElementById('global-enquiry-modal');
       if (dlg && typeof dlg.close === 'function') dlg.close();
       else if (dlg) dlg.classList.add('hidden');
     });

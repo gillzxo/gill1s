@@ -1,11 +1,26 @@
 // =====================================================================
 // Notification dispatchers for a new enquiry:
-//   1. WhatsApp Cloud API alert to the owner
-//   2. Email alert via Resend
-//   3. Append a row to a Google Sheet (via Apps Script Web App or
+//   1. WhatsApp Cloud API alert to the OWNER (staff)
+//   2. Email alert to the OWNER via Resend
+//   3. Email CONFIRMATION to the STUDENT who submitted the form
+//   4. WhatsApp CONFIRMATION to the STUDENT who submitted the form
+//   5. Append a row to a Google Sheet (via Apps Script Web App or
 //      Sheets API with a service account JWT)
 // Every function is best-effort and NEVER throws — a missing/invalid
 // key simply skips that channel so the enquiry save never fails.
+//
+// All of these are OPTIONAL and controlled entirely by which secrets
+// are configured (via `wrangler pages secret put` / .dev.vars):
+//   RESEND_API_KEY + NOTIFY_EMAIL_TO           -> owner email alert
+//   RESEND_API_KEY (NOTIFY_EMAIL_FROM optional) -> student email confirmation
+//   WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_OWNER_NUMBER
+//                                                -> owner WhatsApp alert
+//   WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID
+//                                                -> student WhatsApp confirmation
+//     (WhatsApp confirmations to a NEW number require a pre-approved
+//      Meta message template — see WHATSAPP_CONFIRMATION_TEMPLATE_NAME
+//      below. Without one, Meta will reject the freeform text unless
+//      the student messaged the business number in the last 24h.)
 // =====================================================================
 import type { Bindings } from './types'
 import type { EnquiryInput } from './validation'
@@ -56,6 +71,79 @@ export async function sendWhatsAppAlert(env: Bindings, enquiry: NotifyPayload): 
 }
 
 // ---------------------------------------------------------------------
+// 1b. WhatsApp confirmation to the STUDENT (business-initiated message).
+//     Meta requires either (a) a pre-approved message template, or
+//     (b) the recipient having messaged the business number within the
+//     last 24 hours, for a business to WhatsApp a user who hasn't
+//     opted in via a template. We try a template first if configured;
+//     otherwise we attempt a freeform text (works only within the 24h
+//     service window, e.g. if the student just messaged via the
+//     floating WhatsApp button) and silently skip on failure.
+// ---------------------------------------------------------------------
+export async function sendWhatsAppConfirmationToStudent(env: Bindings, enquiry: NotifyPayload): Promise<void> {
+  if (!env.WHATSAPP_ACCESS_TOKEN || !env.WHATSAPP_PHONE_NUMBER_ID || !enquiry.phone) {
+    return // feature not configured — skip silently
+  }
+
+  // Normalise to a 91XXXXXXXXXX E.164-ish number for the Cloud API
+  const digits = enquiry.phone.replace(/\D/g, '')
+  const toNumber = digits.length === 10 ? `91${digits}` : digits.replace(/^0/, '91')
+
+  try {
+    if (env.WHATSAPP_CONFIRMATION_TEMPLATE_NAME) {
+      // Preferred, reliable path: a pre-approved template. Expected to
+      // take one body variable — the student's first name.
+      await fetch(`https://graph.facebook.com/v20.0/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: toNumber,
+          type: 'template',
+          template: {
+            name: env.WHATSAPP_CONFIRMATION_TEMPLATE_NAME,
+            language: { code: env.WHATSAPP_CONFIRMATION_TEMPLATE_LANG || 'en' },
+            components: [
+              {
+                type: 'body',
+                parameters: [{ type: 'text', text: enquiry.name.split(' ')[0] || enquiry.name }]
+              }
+            ]
+          }
+        })
+      })
+    } else {
+      // Fallback: freeform text. Only delivers if the 24h service
+      // window is open; Meta silently rejects it otherwise — that's
+      // fine, the owner alert + email confirmation still went out.
+      const text =
+        `Hi ${enquiry.name}! 👋\n\n` +
+        `Thank you for submitting your enquiry to *1st Choice IELTS & Immigration*.\n` +
+        `We've received your details for *${enquiry.service}*${enquiry.preferred_country ? ` (${enquiry.preferred_country})` : ''} and one of our counsellors will call you shortly.\n\n` +
+        `Feel free to reply here with any questions in the meantime!`
+      await fetch(`https://graph.facebook.com/v20.0/${env.WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.WHATSAPP_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to: toNumber,
+          type: 'text',
+          text: { body: text, preview_url: false }
+        })
+      })
+    }
+  } catch (err) {
+    console.error('WhatsApp student confirmation failed', err)
+  }
+}
+
+// ---------------------------------------------------------------------
 // 2. Email via Resend
 // ---------------------------------------------------------------------
 export async function sendEmailAlert(env: Bindings, enquiry: NotifyPayload): Promise<void> {
@@ -94,6 +182,57 @@ export async function sendEmailAlert(env: Bindings, enquiry: NotifyPayload): Pro
     })
   } catch (err) {
     console.error('Email alert failed', err)
+  }
+}
+
+// ---------------------------------------------------------------------
+// 2b. Email CONFIRMATION to the STUDENT (sent only if they gave an
+//     email address — it's an optional field on the form). Lets us
+//     confirm receipt even when WhatsApp isn't configured/available.
+// ---------------------------------------------------------------------
+export async function sendEmailConfirmationToStudent(env: Bindings, enquiry: NotifyPayload): Promise<void> {
+  if (!env.RESEND_API_KEY || !enquiry.email) return
+
+  const firstName = enquiry.name.split(' ')[0] || enquiry.name
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto;">
+      <h2 style="color:#0b2559;">Thank you, ${escapeHtml(firstName)}! 🎉</h2>
+      <p style="color:#334155; font-size:15px; line-height:1.6;">
+        We've received your enquiry for <strong>${escapeHtml(enquiry.service)}</strong>${
+          enquiry.preferred_country ? ` (${escapeHtml(enquiry.preferred_country)})` : ''
+        } at <strong>1st Choice IELTS &amp; Immigration</strong> (Bagha Purana, Moga).
+      </p>
+      <p style="color:#334155; font-size:15px; line-height:1.6;">
+        One of our counsellors will call you on <strong>${escapeHtml(enquiry.phone)}</strong> shortly. If you'd like
+        to chat right away, you can reach us on WhatsApp or by phone.
+      </p>
+      <table cellpadding="6" style="border-collapse:collapse; margin: 16px 0; font-size: 14px; color:#475569;">
+        <tr><td><strong>Phone</strong></td><td>+91 97806 90090</td></tr>
+        <tr><td><strong>Address</strong></td><td>Opp. Bus Stand, Kotkapura Road, Bagha Purana, Moga, Punjab 142038</td></tr>
+      </table>
+      <p style="color:#94a3b8; font-size:12px; margin-top: 24px;">
+        This is an automatic confirmation — please do not reply directly to this email. For any questions, call or
+        WhatsApp us using the number above.
+      </p>
+    </div>
+  `
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: env.NOTIFY_EMAIL_FROM || 'enquiries@1stchoiceimmigration.com',
+        to: [enquiry.email],
+        subject: `We've received your enquiry — 1st Choice IELTS & Immigration`,
+        html
+      })
+    })
+  } catch (err) {
+    console.error('Student email confirmation failed', err)
   }
 }
 
@@ -253,8 +392,10 @@ export async function verifyRecaptcha(env: Bindings, token: string, remoteIp?: s
 // ---------------------------------------------------------------------
 export async function dispatchEnquiryNotifications(env: Bindings, enquiry: NotifyPayload): Promise<void> {
   await Promise.allSettled([
-    sendWhatsAppAlert(env, enquiry),
-    sendEmailAlert(env, enquiry),
+    sendWhatsAppAlert(env, enquiry), // → owner/staff
+    sendEmailAlert(env, enquiry), // → owner/staff
+    sendEmailConfirmationToStudent(env, enquiry), // → student (if email given + RESEND_API_KEY set)
+    sendWhatsAppConfirmationToStudent(env, enquiry), // → student (if WhatsApp Cloud API configured)
     appendToGoogleSheet(env, enquiry)
   ])
 }

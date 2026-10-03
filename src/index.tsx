@@ -19,6 +19,7 @@ import legal from './pages/legal'
 import visitorVisaPage from './pages/visitor-visa'
 import scoreChartsPage from './pages/score-charts'
 import registerPage from './pages/register'
+import portalPage from './pages/portal'
 
 import api from './routes/api'
 import uploads from './routes/uploads'
@@ -31,6 +32,7 @@ import adminUpload from './admin/upload'
 import adminVisaResults from './admin/visa-results'
 import adminCoachingResults from './admin/coaching-results'
 import adminNews from './admin/news'
+import adminStudents from './admin/students'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -51,6 +53,7 @@ app.route('/admin/api', adminUpload)
 app.route('/admin/visa-results', adminVisaResults)
 app.route('/admin/coaching-results', adminCoachingResults)
 app.route('/admin/news', adminNews)
+app.route('/admin/students', adminStudents)
 app.route('/admin', adminDashboard)
 
 // Public pages (use the shared renderer)
@@ -67,6 +70,7 @@ app.route('/', legal)
 app.route('/', visitorVisaPage)
 app.route('/', scoreChartsPage)
 app.route('/', registerPage)
+app.route('/', portalPage)
 
 app.notFound((c) => {
   return c.render(

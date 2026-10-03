@@ -117,6 +117,38 @@ export const countrySchema = z.object({
     .default(false as any)
 })
 
+export const studentSchema = z.object({
+  name: z.string().trim().min(2, 'Please enter the student name').max(120),
+  phone: z.string().trim().regex(INDIAN_PHONE_REGEX, 'Enter a valid 10-digit Indian mobile number'),
+  email: z.string().trim().email('Enter a valid email').optional().or(z.literal('')),
+  country: z.string().trim().max(80).optional().or(z.literal('')),
+  course: z.string().trim().max(120).optional().or(z.literal('')),
+  university: z.string().trim().max(150).optional().or(z.literal('')),
+  status: z.enum([
+    'Registered',
+    'Documents Pending',
+    'Application Submitted',
+    'Visa Filed',
+    'Visa Approved',
+    'Visa Rejected',
+    'Enrolled',
+    'On Hold'
+  ]),
+  required_documents: z.string().trim().max(5000).optional().or(z.literal('')),
+  assigned_to: z.string().trim().optional().or(z.literal('')),
+  notes: z.string().trim().max(4000).optional().or(z.literal('')),
+  enquiry_id: z.string().trim().optional().or(z.literal(''))
+})
+
+export const studentUpdateSchema = z.object({
+  title: z.string().trim().min(2, 'Please enter a title').max(160),
+  message: z.string().trim().max(2000).optional().or(z.literal('')),
+  is_visible_to_student: z
+    .union([z.literal('on'), z.literal('true'), z.boolean()])
+    .transform((v) => (v === 'on' || v === 'true' || v === true ? 1 : 0))
+    .default(false as any)
+})
+
 export function formatZodError(err: z.ZodError): string {
   return err.issues.map((i) => i.message).join('; ')
 }

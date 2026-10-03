@@ -25,6 +25,7 @@ import adminAuth from './admin/auth'
 import adminDashboard from './admin/dashboard'
 import adminEnquiries from './admin/enquiries'
 import adminUpload from './admin/upload'
+import adminVisaResults from './admin/visa-results'
 
 const app = new Hono<{ Bindings: Bindings }>()
 
@@ -42,6 +43,7 @@ app.route('/api', api)
 app.route('/admin', adminAuth)
 app.route('/admin/enquiries', adminEnquiries)
 app.route('/admin/api', adminUpload)
+app.route('/admin/visa-results', adminVisaResults)
 app.route('/admin', adminDashboard)
 
 // Public pages (use the shared renderer)

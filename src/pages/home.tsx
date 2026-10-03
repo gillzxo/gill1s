@@ -120,9 +120,9 @@ home.get('/', async (c) => {
               <img
                 src={settings.md_photo_url || '/static/images/director-gurpiar-singh-gill.jpg'}
                 alt={`${settings.md_name} — ${settings.md_title}, ${settings.business_name}`}
-                class="w-56 h-56 sm:w-64 sm:h-64 rounded-2xl object-cover shadow-xl"
-                width="256"
-                height="256"
+                class="w-52 h-72 sm:w-60 sm:h-[22rem] rounded-2xl object-cover object-top shadow-xl"
+                width="240"
+                height="352"
                 loading="lazy"
               />
             </div>

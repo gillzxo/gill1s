@@ -31,26 +31,29 @@
 - `migrations/0001_initial_schema.sql` — all 9 tables: `enquiries`, `visa_results`, `coaching_results`, `news_posts`, `countries`, `reviews`, `site_settings`, `admin_users`, `activity_logs`, plus `sessions` and `rate_limits`
 - `migrations/0002_seed_data.sql` — seeds the 5 country pages, sample visa/coaching results, sample reviews, a starter news post, and all site settings (phone, address, social links — using your real public business details)
 
-**Admin portal (`/admin`)**
-- `/admin/login` — email+password login, self-bootstraps the first Owner account on first visit (no manual DB setup needed), rate-limited against brute force
-- `/admin` (Dashboard) — today/week/month enquiry counts, counts by service, recent enquiries table — **fully functional, live data**
-- Sidebar navigation to Enquiries, Visa Results, Coaching Results, News, Study Abroad, Reviews, Settings, Staff — all routes exist and render (see "Remaining Work" below for which are placeholder vs full CRUD)
-- `src/admin/middleware.ts` — `requireAdmin`/`requireOwner` route guards
-- `src/lib/log.ts` — activity logging helper wired for every future admin mutation
+**Admin portal (`/admin`)** — fully functional, tested end-to-end against the local D1 database:
+- `/admin/login` — email+password login, self-bootstraps the first Owner account on first visit (no manual DB setup needed — see note below), rate-limited against brute force (8 attempts / 15 min per IP)
+- `/admin` (Dashboard) — today/week/month enquiry counts, counts by service, recent enquiries table — live data
+- `/admin/enquiries` — **full CRUD**: search (name/phone/email), filter by status/service/date range, pagination, CSV export, detail view with notes history + add-note, status update, staff assignment, one-click call/WhatsApp links
+- `/admin/visa-results` — **full CRUD**: drag-drop/click image upload to R2, publish/unpublish toggle, up/down reorder (persisted via `sort_order`), edit, delete
+- `/admin/coaching-results` — **full CRUD**: same pattern as Visa Results, plus per-skill band score fields (listening/reading/writing/speaking/overall)
+- `/admin/news` — **full CRUD**: dependency-free rich-text editor (bold/italic/headings/lists/links/images via `document.execCommand`), auto-slug-from-title (editable), slug-uniqueness validation, cover image upload, SEO title/description fields, draft/published/scheduled workflow with publish-date validation, status filter tabs, live-view link for published posts
+- `src/admin/middleware.ts` — `requireAdmin`/`requireOwner` route guards (session cookie + D1 `sessions` table)
+- `src/lib/log.ts` — activity logging wired into every mutation above (create/update/delete/publish/assign/status/note)
+- `/admin/api/upload` — shared image upload endpoint (R2, type/size validated) used by all dropzones above
 
 ## ⚠️ Remaining Work (honest status — not yet built)
-Given the scope of this spec (a full production CMS), the following admin CRUD screens are **scaffolded with working navigation and the correct DB schema/validation/upload helpers already in place, but the actual create/edit/delete forms are not yet wired**:
-- Enquiries manager (search/filter/status/notes/assign/CSV export/WhatsApp-call buttons)
-- Visa Results manager (drag-drop upload using the existing `handleImageUpload` + R2, publish/reorder/delete)
-- Coaching Results manager (same pattern)
-- News manager (rich-text editor — toolbar JS already built in `admin.js`, needs the create/edit page)
-- Study Abroad country editor
-- Reviews manager + Settings page (update site_settings, paste widget embed codes)
-- Staff accounts (owner-only)
+The following admin CRUD screens are still **scaffolded as "Coming Soon" placeholders** (navigation works, DB schema/Zod validation/R2 upload helper already exist, but the actual forms are not wired yet):
+- Study Abroad country editor (`/admin/countries`)
+- Reviews manager (`/admin/reviews`)
+- Site Settings page (`/admin/settings` — update `site_settings` table, paste widget embed codes, change own password)
+- Staff accounts (`/admin/staff` — owner-only, create/deactivate staff logins)
 
-**All the hard infrastructure for these is done** (Zod schemas in `src/lib/validation.ts`, DB tables, R2 upload, activity logging, rich-text toolbar JS, image dropzone JS, JSON-list editor JS for universities/documents) — what's left is strictly the Hono route handlers + HTML forms per section, following the exact same pattern as `src/admin/dashboard.tsx`. This is mechanical, repetitive work best continued in a follow-up session focused purely on the admin CRUD screens.
+**All the hard infrastructure for these is done** (Zod schemas in `src/lib/validation.ts`, DB tables, R2 upload, activity logging, image dropzone JS, JSON-list editor JS already built in `admin.js` for the universities/documents array fields a Countries editor needs) — what's left follows the exact same pattern as `src/admin/news.tsx` / `src/admin/visa-results.tsx`. This is mechanical, repetitive work best continued in a follow-up session.
 
-**Also not yet done**: Punjabi/Hindi language toggle (optional per spec), connecting live API keys (see setup guides below — all code paths are ready, just need your credentials).
+**Also not yet done**: wiring `RECAPTCHA_SITE_KEY` into the public renderer for client-side token generation (server-side verification already exists and fails open if unconfigured), Punjabi/Hindi language toggle (optional per spec), connecting live API keys (see setup guides below — all code paths are ready, just need your credentials).
+
+**Known gotcha fixed this session**: the seed migration used to insert a placeholder `admin_users` row with a bogus password hash, which silently blocked the auto-bootstrap login flow on a fresh database. The seed no longer inserts that row — `GET /admin/login` now correctly creates the real first Owner account (`admin@1stchoiceimmigration.com` / `Admin@12345`) the first time the table is empty. If you already ran the old migration, run: `DELETE FROM admin_users;` once against your database before first login.
 
 ## Data Architecture
 - **Database**: Cloudflare D1 (SQLite) — see `migrations/0001_initial_schema.sql` for full schema with indexes
@@ -152,7 +155,7 @@ Then connect your custom domain in the Cloudflare Pages dashboard → Custom Dom
    - Password: `Admin@12345`
    - **Change this password immediately** (requires the Staff/Settings screens to be finished, or run a SQL UPDATE with a newly hashed password in the interim).
 2. Dashboard shows live enquiry counts — fully working today.
-3. Visa Results / News / Coaching Results management: **not yet wired** — see "Remaining Work". Until then, add content directly via `npx wrangler d1 execute 1st-choice-production --command="INSERT INTO visa_results (...) VALUES (...)"` or ask for the next build session to finish these screens.
+3. Enquiries, Visa Results, Coaching Results, and News are fully manageable from the admin portal now (search/filter/CRUD/publish/reorder as described above). Study Abroad countries, Reviews, Settings, and Staff accounts are still "Coming Soon" placeholders — until built, edit those directly via `npx wrangler d1 execute 1st-choice-production --command="UPDATE countries SET ... WHERE slug='canada'"` (or the INSERT/UPDATE equivalent for `reviews`/`site_settings`).
 
 ## Testing Checklist
 - [x] All public pages return 200 and render correctly (verified via curl)
@@ -160,9 +163,13 @@ Then connect your custom domain in the Cloudflare Pages dashboard → Custom Dom
 - [x] D1 migrations apply cleanly (schema + seed data)
 - [x] Enquiry form client-side validation (phone regex, consent checkbox)
 - [x] Loan calculators compute correct EMI/eligibility math (manually verified formulas)
+- [x] Admin Enquiries manager: filters, search, pagination, CSV export, status/assign/notes mutations — verified via curl against local D1
+- [x] Admin Visa Results manager: create/edit/publish-toggle/reorder/delete — verified via curl against local D1
+- [x] Admin Coaching Results manager: create/edit/publish-toggle/reorder/delete — verified via curl against local D1
+- [x] Admin News manager: create/edit/delete, slug uniqueness, scheduled-post date validation, public page renders published posts — verified via curl against local D1
 - [ ] Enquiry form full submit → DB → notifications (needs live API keys to fully verify WhatsApp/email/Sheets delivery)
-- [ ] Admin CRUD screens (pending build-out)
-- [ ] Lighthouse score pass (recommend running after admin screens are complete and real images replace sample placeHTML paths)
+- [ ] Remaining admin CRUD screens: Countries, Reviews, Settings, Staff (pending build-out)
+- [ ] Lighthouse score pass (recommend running after admin screens are complete and real images replace sample placeholder paths)
 
 ## Known Placeholder Content (replace via DB/admin once image manager is built)
 - Visa result images reference `/static/images/visa-samples/*.jpg` and student photos reference `/static/images/students/*.jpg` — these files are **not yet uploaded**; the gallery will show broken images until real posters are added via the (pending) Visa Results admin uploader. Replace the `image_url` values in the `visa_results`/`coaching_results` tables once you have real posters, or build the admin uploader next.

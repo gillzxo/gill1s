@@ -50,6 +50,9 @@ home.get('/', async (c) => {
   const newsPosts = newsRes.results || []
 
   const waLink = whatsappLink(settings.whatsapp_number, 'Hi! I would like a free consultation.')
+  const foundedYear = parseInt(settings.founded_year) || 2018
+  const currentYear = new Date().getFullYear()
+  const yearsOfExperience = Math.max(currentYear - foundedYear, parseInt(settings.stat_years_experience) || 0)
 
   return c.render(
     <>
@@ -59,14 +62,14 @@ home.get('/', async (c) => {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <span class="inline-flex items-center gap-2 bg-white/10 text-white text-xs font-bold tracking-wide uppercase px-4 py-2 rounded-full mb-6">
-              <i class="fa-solid fa-star text-amber-400"></i> Ludhiana's Trusted Immigration Partner
+              <i class="fa-solid fa-star text-amber-400"></i> Bagha Purana's Trusted Immigration Partner Since {settings.founded_year || '2018'}
             </span>
             <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-[1.1]">
               Your Journey to <span class="text-brand-red">Study & Settle Abroad</span> Starts Here
             </h1>
             <p class="text-slate-300 text-lg mt-6 max-w-xl">
               IELTS/PTE coaching, study abroad counselling, education loan assistance, and visa services — all under
-              one roof in Ludhiana, Punjab.
+              one roof in Bagha Purana, Moga, Punjab.
             </p>
             <div class="flex flex-wrap gap-4 mt-8">
               <a
@@ -104,8 +107,39 @@ home.get('/', async (c) => {
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
           <StatCounter value={parseInt(settings.stat_students_placed) || 0} label="Students Placed" icon="fa-user-graduate" />
           <StatCounter value={parseInt(settings.stat_visas_approved) || 0} label="Visas Approved" icon="fa-passport" />
-          <StatCounter value={parseInt(settings.stat_years_experience) || 0} label="Years of Experience" icon="fa-award" />
+          <StatCounter value={yearsOfExperience} label={`Years of Experience (Since ${settings.founded_year || '2018'})`} icon="fa-award" />
           <StatCounter value={parseInt(settings.stat_countries) || 0} label="Study Destinations" icon="fa-earth-americas" />
+        </div>
+      </section>
+
+      {/* ================= MANAGING DIRECTOR ================= */}
+      <section class="py-20">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="reveal grid md:grid-cols-5 gap-10 items-center bg-slate-50 rounded-3xl p-6 sm:p-10 border border-slate-100">
+            <div class="md:col-span-2 flex justify-center">
+              <img
+                src={settings.md_photo_url || '/static/images/director-gurpiar-singh-gill.jpg'}
+                alt={`${settings.md_name} — ${settings.md_title}, ${settings.business_name}`}
+                class="w-56 h-56 sm:w-64 sm:h-64 rounded-2xl object-cover shadow-xl"
+                width="256"
+                height="256"
+                loading="lazy"
+              />
+            </div>
+            <div class="md:col-span-3">
+              <span class="inline-block text-xs font-bold tracking-widest uppercase text-brand-red bg-red-50 px-3 py-1 rounded-full mb-3">
+                A Message From Our Managing Director
+              </span>
+              <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-brand-blue mb-1">{settings.md_name}</h2>
+              <p class="text-brand-red font-semibold text-sm mb-4">{settings.md_title}, {settings.branch_name || settings.business_name}</p>
+              <p class="text-slate-600 leading-relaxed">{settings.md_bio}</p>
+              <div class="flex flex-wrap gap-4 mt-6">
+                <a href="#enquiry" class="inline-flex items-center gap-2 bg-brand-red hover:bg-brand-reddark text-white font-bold px-6 py-3 rounded-full transition-colors">
+                  <i class="fa-solid fa-calendar-check"></i> Talk to Our Team
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -228,7 +262,7 @@ home.get('/', async (c) => {
         </div>
       </section>
     </>,
-    { title: 'Home', description: `${settings.business_name} — Expert IELTS/PTE coaching, study abroad guidance, education loan assistance, and visa services in Ludhiana, Punjab.` }
+    { title: 'Home', description: `${settings.business_name} — Expert IELTS/PTE coaching, study abroad guidance, education loan assistance, and visa services in Bagha Purana, Moga, Punjab.` }
   )
 })
 

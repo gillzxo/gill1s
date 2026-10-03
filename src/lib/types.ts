@@ -106,6 +106,7 @@ export interface Country {
   work_rights: string | null
   pr_pathway: string | null
   documents_json: string | null
+  region: string | null
   is_published: number
   sort_order: number
   created_at: string

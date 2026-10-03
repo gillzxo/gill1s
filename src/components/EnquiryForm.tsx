@@ -90,7 +90,7 @@ export function EnquiryForm({ settings, idPrefix = 'ef', defaultService = 'Study
               id={`${idPrefix}-city`}
               name="city"
               type="text"
-              placeholder="e.g. Ludhiana"
+              placeholder="e.g. Moga"
               class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-brand-red focus:ring-2 focus:ring-red-100 outline-none transition"
             />
           </div>

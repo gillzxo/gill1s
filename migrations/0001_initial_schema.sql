@@ -142,6 +142,9 @@ CREATE TABLE IF NOT EXISTS countries (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_countries_slug ON countries(slug);
+-- NOTE: `region` column (e.g. "Europe" groups Germany/Ireland/France/Poland)
+-- is added later via migration 0003 (ALTER TABLE) — kept out of this file
+-- since it was already applied to existing databases before region existed.
 
 -- ---------------------------------------------------------------------
 -- reviews: manual reviews + toggles for Google/Instagram embeds

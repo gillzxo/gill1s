@@ -110,6 +110,7 @@ export const countrySchema = z.object({
   pr_pathway: z.string().trim().max(1000).optional().or(z.literal('')),
   universities_json: z.string().trim().max(5000).optional().or(z.literal('')),
   documents_json: z.string().trim().max(5000).optional().or(z.literal('')),
+  region: z.string().trim().max(40).optional().or(z.literal('')),
   is_published: z
     .union([z.literal('on'), z.literal('true'), z.boolean()])
     .transform((v) => (v === 'on' || v === 'true' || v === true ? 1 : 0))

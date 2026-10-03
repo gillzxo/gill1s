@@ -18,7 +18,7 @@ contactPage.get('/contact', async (c) => {
     <>
       <PageHero
         title="Get In Touch With Us"
-        subtitle="Visit our Ludhiana office, call us, or send an enquiry — our counsellors are ready to help."
+        subtitle="Visit our Bagha Purana office, call us, or send an enquiry — our counsellors are ready to help."
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Contact' }]}
       />
 
@@ -102,7 +102,7 @@ contactPage.get('/contact', async (c) => {
     </>,
     {
       title: 'Contact Us',
-      description: `Contact ${settings.business_name} in Ludhiana, Punjab. Call, WhatsApp, or send an enquiry for free consultation on IELTS coaching, study abroad, loans & visa services.`
+      description: `Contact ${settings.business_name} in Bagha Purana, Moga, Punjab. Call, WhatsApp, or send an enquiry for free consultation on IELTS coaching, study abroad, loans & visa services.`
     }
   )
 })

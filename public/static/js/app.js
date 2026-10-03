@@ -31,6 +31,47 @@
   if (backdrop) backdrop.addEventListener('click', closeDrawer);
 
   // ---------------------------------------------------------------
+  // Dismissible welcome popup — shows once per browser session
+  // (sessionStorage), closable via X, "No Thanks", backdrop click, or Esc.
+  // ---------------------------------------------------------------
+  var popupBackdrop = document.getElementById('welcome-popup-backdrop');
+  if (popupBackdrop) {
+    var POPUP_KEY = 'welcomePopupDismissed';
+    var alreadyShown = false;
+    try {
+      alreadyShown = sessionStorage.getItem(POPUP_KEY) === '1';
+    } catch (e) {
+      /* sessionStorage unavailable (private mode) — just show it once per load */
+    }
+
+    function hidePopup() {
+      popupBackdrop.classList.add('hidden');
+      popupBackdrop.classList.remove('flex');
+      try {
+        sessionStorage.setItem(POPUP_KEY, '1');
+      } catch (e) {}
+    }
+
+    if (!alreadyShown) {
+      setTimeout(function () {
+        popupBackdrop.classList.remove('hidden');
+        popupBackdrop.classList.add('flex');
+      }, 1800);
+    }
+
+    var popupClose = document.getElementById('welcome-popup-close');
+    var popupDismiss = document.getElementById('welcome-popup-dismiss');
+    if (popupClose) popupClose.addEventListener('click', hidePopup);
+    if (popupDismiss) popupDismiss.addEventListener('click', hidePopup);
+    popupBackdrop.addEventListener('click', function (e) {
+      if (e.target === popupBackdrop) hidePopup();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !popupBackdrop.classList.contains('hidden')) hidePopup();
+    });
+  }
+
+  // ---------------------------------------------------------------
   // Scroll reveal animation
   // ---------------------------------------------------------------
   var revealEls = document.querySelectorAll('.reveal');

@@ -14,7 +14,13 @@ studyAbroad.get('/study-abroad', async (c) => {
   const { results } = await c.env.DB.prepare(
     'SELECT * FROM countries WHERE is_published = 1 ORDER BY sort_order ASC'
   ).all<Country>()
-  const countries = results || []
+  const allCountries = results || []
+
+  // Non-Europe destinations show as top-level cards; Europe countries are
+  // grouped under a single "Europe" card so students pick the region first,
+  // then the specific country.
+  const standaloneCountries = allCountries.filter((ctry) => ctry.region !== 'Europe')
+  const europeCountries = allCountries.filter((ctry) => ctry.region === 'Europe')
 
   return c.render(
     <>
@@ -28,7 +34,7 @@ studyAbroad.get('/study-abroad', async (c) => {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionHeading eyebrow="Popular Destinations" title="Explore Study Destinations" />
           <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {countries.map((country) => (
+            {standaloneCountries.map((country) => (
               <a href={`/study-abroad/${country.slug}`} class="card-lift reveal bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm block">
                 <div class="h-40 bg-gradient-to-br from-brand-blue to-brand-bluelight flex items-center justify-center text-6xl">
                   {country.flag_emoji}
@@ -42,9 +48,51 @@ studyAbroad.get('/study-abroad', async (c) => {
                 </div>
               </a>
             ))}
+
+            {/* Europe — grouped card. Click reveals a dropdown of specific countries. */}
+            {europeCountries.length > 0 ? (
+              <div class="card-lift reveal bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm relative" id="europe-card">
+                <div class="h-40 bg-gradient-to-br from-brand-blue to-brand-bluelight flex items-center justify-center text-6xl">
+                  🇪🇺
+                </div>
+                <div class="p-6">
+                  <h3 class="font-display font-bold text-xl text-brand-blue mb-2">Study in Europe</h3>
+                  <p class="text-slate-500 text-sm mb-4">
+                    {europeCountries.length} popular European destinations — pick a country to see universities, fees &amp; visa details.
+                  </p>
+                  <label htmlFor="europe-country-select" class="sr-only">
+                    Select a European country
+                  </label>
+                  <select
+                    id="europe-country-select"
+                    class="w-full px-4 py-3 rounded-lg border border-slate-300 bg-white text-sm font-semibold text-brand-blue focus:border-brand-red focus:ring-2 focus:ring-red-100 outline-none transition"
+                    data-europe-select
+                  >
+                    <option value="">Select a country...</option>
+                    {europeCountries.map((c2) => (
+                      <option value={`/study-abroad/${c2.slug}`}>
+                        {c2.flag_emoji} {c2.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            document.querySelectorAll('[data-europe-select]').forEach(function (sel) {
+              sel.addEventListener('change', function () {
+                if (sel.value) window.location.href = sel.value;
+              });
+            });
+          `
+        }}
+      ></script>
 
       <section class="py-20 bg-slate-50">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,7 +104,7 @@ studyAbroad.get('/study-abroad', async (c) => {
     </>,
     {
       title: 'Study Abroad',
-      description: `Explore study abroad options in Canada, UK, Australia, USA, and Germany with ${settings.business_name}. Universities, intakes, fees, eligibility & PR pathways.`
+      description: `Explore study abroad options in Canada, UK, Australia, USA, New Zealand, and Europe (Germany, Ireland, France, Poland) with ${settings.business_name}. Universities, intakes, fees, eligibility & PR pathways.`
     }
   )
 })

@@ -29,6 +29,8 @@ const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/coaching', label: 'Coaching' },
   { href: '/study-abroad', label: 'Study Abroad' },
+  { href: '/visitor-visa', label: 'Visitor Visa' },
+  { href: '/score-charts', label: 'Score Charts' },
   { href: '/education-loan', label: 'Education Loan' },
   { href: '/visa-results', label: 'Visa Results' },
   { href: '/reviews', label: 'Reviews' },
@@ -44,7 +46,7 @@ export const renderer = jsxRenderer((props, c) => {
   const title = meta.title ? `${meta.title} | ${settings.business_name}` : `${settings.business_name} — ${settings.tagline}`
   const description =
     meta.description ||
-    `${settings.business_name} in Ludhiana, Punjab — expert IELTS/PTE coaching, study abroad guidance, education loan assistance, and visa services. Free consultation.`
+    `${settings.business_name} in Bagha Purana, Moga, Punjab — expert IELTS/PTE coaching, study abroad guidance, education loan assistance, and visa services. Free consultation.`
   const ogImage = meta.ogImage || '/static/images/logo.png'
   const base = 'https://1stchoiceimmigration.com' // update after custom domain is connected
   const canonical = meta.canonical || `${base}${path}`
@@ -62,10 +64,12 @@ export const renderer = jsxRenderer((props, c) => {
     address: {
       '@type': 'PostalAddress',
       streetAddress: settings.address,
-      addressLocality: 'Ludhiana',
+      addressLocality: 'Bagha Purana',
       addressRegion: 'Punjab',
+      postalCode: '142038',
       addressCountry: 'IN'
     },
+    foundingDate: settings.founded_year || '2018',
     openingHours: 'Mo-Sa 10:00-19:00',
     sameAs: [settings.instagram_url, settings.facebook_url].filter(Boolean),
     aggregateRating: settings.google_rating
@@ -163,11 +167,11 @@ export const renderer = jsxRenderer((props, c) => {
                 <img src="/static/images/logo.png" alt={`${settings.business_name} logo`} class="h-14 w-auto" width="140" height="56" />
               </a>
 
-              <nav class="hidden lg:flex items-center gap-7" aria-label="Primary navigation">
+              <nav class="hidden xl:flex items-center gap-5" aria-label="Primary navigation">
                 {NAV_LINKS.map((link) => (
                   <a
                     href={link.href}
-                    class={`text-sm font-semibold transition-colors hover:text-brand-red ${
+                    class={`text-[13px] font-semibold whitespace-nowrap transition-colors hover:text-brand-red ${
                       path === link.href ? 'text-brand-red' : 'text-brand-blue'
                     }`}
                   >
@@ -176,7 +180,7 @@ export const renderer = jsxRenderer((props, c) => {
                 ))}
               </nav>
 
-              <div class="hidden lg:flex items-center gap-3">
+              <div class="hidden xl:flex items-center gap-3">
                 <a
                   href={`tel:${settings.phone_primary.replace(/\s/g, '')}`}
                   class="inline-flex items-center gap-2 text-sm font-semibold text-brand-blue hover:text-brand-red"
@@ -193,7 +197,7 @@ export const renderer = jsxRenderer((props, c) => {
 
               <button
                 id="mobile-nav-toggle"
-                class="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-brand-blue"
+                class="xl:hidden inline-flex items-center justify-center w-11 h-11 rounded-lg text-brand-blue"
                 aria-label="Open menu"
                 aria-expanded="false"
                 aria-controls="mobile-nav"
@@ -205,7 +209,7 @@ export const renderer = jsxRenderer((props, c) => {
         </header>
 
         {/* Mobile nav drawer */}
-        <div id="mobile-nav" class="fixed inset-y-0 right-0 w-80 max-w-[85vw] bg-white z-50 shadow-2xl lg:hidden flex flex-col">
+        <div id="mobile-nav" class="fixed inset-y-0 right-0 w-80 max-w-[85vw] bg-white z-50 shadow-2xl xl:hidden flex flex-col">
           <div class="flex items-center justify-between p-5 border-b border-slate-100">
             <img src="/static/images/logo.png" alt={settings.business_name} class="h-10 w-auto" />
             <button id="mobile-nav-close" class="w-10 h-10 inline-flex items-center justify-center text-brand-blue" aria-label="Close menu">
@@ -236,7 +240,7 @@ export const renderer = jsxRenderer((props, c) => {
             </a>
           </div>
         </div>
-        <div id="mobile-nav-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden"></div>
+        <div id="mobile-nav-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden xl:hidden"></div>
 
         <main id="main-content">{children}</main>
 
@@ -245,7 +249,7 @@ export const renderer = jsxRenderer((props, c) => {
             <div>
               <img src="/static/images/logo.png" alt={settings.business_name} class="h-16 w-auto mb-4 bg-white rounded-lg p-1" />
               <p class="text-sm text-slate-400 leading-relaxed">
-                Your trusted partner in Ludhiana for IELTS/PTE coaching, study abroad guidance, education loans, and visa services.
+                Your trusted partner in Bagha Purana (Moga) since {settings.founded_year || '2018'} for IELTS/PTE coaching, study abroad guidance, education loans, and visa services.
               </p>
               <div class="flex gap-3 mt-5">
                 {settings.instagram_url ? (
@@ -298,13 +302,24 @@ export const renderer = jsxRenderer((props, c) => {
             <div>
               <h3 class="font-display font-bold text-white mb-4">Study Destinations</h3>
               <ul class="space-y-2 text-sm">
-                {['canada', 'uk', 'australia', 'usa', 'germany'].map((slug) => (
+                {['canada', 'uk', 'australia', 'usa', 'new-zealand', 'germany'].map((slug) => (
                   <li>
                     <a href={`/study-abroad/${slug}`} class="text-slate-400 hover:text-white transition-colors capitalize">
-                      Study in {slug.toUpperCase() === 'UK' || slug.toUpperCase() === 'USA' ? slug.toUpperCase() : slug.charAt(0).toUpperCase() + slug.slice(1)}
+                      Study in{' '}
+                      {slug === 'uk' || slug === 'usa'
+                        ? slug.toUpperCase()
+                        : slug
+                            .split('-')
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(' ')}
                     </a>
                   </li>
                 ))}
+                <li>
+                  <a href="/score-charts" class="text-slate-400 hover:text-white transition-colors">
+                    IELTS/PTE Score Charts
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -357,6 +372,35 @@ export const renderer = jsxRenderer((props, c) => {
         <a href={waLink} target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Chat on WhatsApp">
           <i class="fa-brands fa-whatsapp text-white text-3xl"></i>
         </a>
+
+        {/* Dismissible welcome popup (admin-configurable via Settings) */}
+        {settings.popup_enabled === '1' && settings.popup_title ? (
+          <div id="welcome-popup-backdrop" class="fixed inset-0 bg-black/60 z-[60] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="welcome-popup-title">
+            <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 animate-[fadeIn_0.25s_ease]">
+              <button id="welcome-popup-close" class="absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center" aria-label="Close popup">
+                <i class="fa-solid fa-xmark text-lg"></i>
+              </button>
+              <div class="w-14 h-14 rounded-xl bg-red-50 text-brand-red flex items-center justify-center mb-4">
+                <i class="fa-solid fa-gift text-2xl"></i>
+              </div>
+              <h2 id="welcome-popup-title" class="font-display text-xl sm:text-2xl font-extrabold text-brand-blue mb-2">
+                {settings.popup_title}
+              </h2>
+              <p class="text-slate-500 text-sm leading-relaxed mb-6">{settings.popup_text}</p>
+              <div class="flex flex-col sm:flex-row gap-3">
+                <a
+                  href={settings.popup_cta_link || '/register'}
+                  class="flex-1 inline-flex items-center justify-center gap-2 bg-brand-red hover:bg-brand-reddark text-white font-bold py-3 rounded-full transition-colors"
+                >
+                  <i class="fa-solid fa-paper-plane"></i> {settings.popup_cta_text || 'Get Started'}
+                </a>
+                <button id="welcome-popup-dismiss" type="button" class="flex-1 inline-flex items-center justify-center gap-2 border-2 border-slate-200 text-slate-500 font-semibold py-3 rounded-full hover:bg-slate-50 transition-colors">
+                  No Thanks
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         <script src="/static/js/app.js"></script>
       </body>

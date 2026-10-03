@@ -111,7 +111,7 @@ legal.get('/terms', (c) => {
             our property and may not be reproduced without written permission.
           </p>
           <h2>Governing Law</h2>
-          <p>These terms are governed by the laws of India, with jurisdiction in Ludhiana, Punjab.</p>
+          <p>These terms are governed by the laws of India, with jurisdiction in Moga, Punjab.</p>
           <h2>Contact Us</h2>
           <p>
             For any questions about these Terms, contact us at {settings.address}, phone {settings.phone_primary},

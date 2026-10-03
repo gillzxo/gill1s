@@ -42,7 +42,7 @@ const COURSES = [
 
 const FACULTY = [
   { name: 'Ms. Ravneet Kaur', role: 'IELTS Trainer (10+ yrs)', icon: 'fa-chalkboard-user' },
-  { name: 'Mr. Gurpreet Singh', role: 'PTE & CELPIP Specialist', icon: 'fa-chalkboard-user' },
+  { name: 'Mr. Jasbir Singh', role: 'PTE & CELPIP Specialist', icon: 'fa-chalkboard-user' },
   { name: 'Ms. Simran Dhillon', role: 'Spoken English Coach', icon: 'fa-chalkboard-user' }
 ]
 
@@ -58,7 +58,7 @@ coaching.get('/coaching', async (c) => {
     <>
       <PageHero
         title="IELTS, PTE & Spoken English Coaching"
-        subtitle="Small batches, experienced faculty, and a results-driven teaching method — right here in Ludhiana."
+        subtitle="Small batches, experienced faculty, and a results-driven teaching method — right here in Bagha Purana."
         breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Coaching' }]}
       />
 
@@ -179,7 +179,7 @@ coaching.get('/coaching', async (c) => {
     </>,
     {
       title: 'IELTS & PTE Coaching',
-      description: `Join ${settings.business_name} in Ludhiana for expert IELTS, PTE, and CELPIP coaching with proven band-score results. Book a free demo class today.`
+      description: `Join ${settings.business_name} in Bagha Purana, Moga for expert IELTS, PTE, and CELPIP coaching with proven band-score results. Book a free demo class today.`
     }
   )
 })

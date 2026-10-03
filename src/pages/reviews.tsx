@@ -160,7 +160,7 @@ reviewsPage.get('/reviews', async (c) => {
     </>,
     {
       title: 'Reviews',
-      description: `Read genuine Google reviews and see Instagram success stories from ${settings.business_name} students in Ludhiana.`
+      description: `Read genuine Google reviews and see Instagram success stories from ${settings.business_name} students in Bagha Purana, Moga.`
     }
   )
 })

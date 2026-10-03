@@ -16,6 +16,9 @@ import reviewsPage from './pages/reviews'
 import newsPage from './pages/news'
 import contactPage from './pages/contact'
 import legal from './pages/legal'
+import visitorVisaPage from './pages/visitor-visa'
+import scoreChartsPage from './pages/score-charts'
+import registerPage from './pages/register'
 
 import api from './routes/api'
 import uploads from './routes/uploads'
@@ -61,6 +64,9 @@ app.route('/', reviewsPage)
 app.route('/', newsPage)
 app.route('/', contactPage)
 app.route('/', legal)
+app.route('/', visitorVisaPage)
+app.route('/', scoreChartsPage)
+app.route('/', registerPage)
 
 app.notFound((c) => {
   return c.render(

@@ -35,7 +35,9 @@ import adminNews from './admin/news'
 import adminStudents from './admin/students'
 
 const app = new Hono<{ Bindings: Bindings }>()
-
+   app.onError((err, c) => {
+     return c.text('ERROR: ' + err.message + '\n\n' + err.stack, 500)
+   })
 // ---- Public site: settings + JSX renderer on every page ----
 app.use('*', loadSettings)
 
